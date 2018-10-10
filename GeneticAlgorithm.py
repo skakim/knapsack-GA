@@ -2,11 +2,12 @@ import pandas as pd
 import numpy as np
 from copy import copy, deepcopy
 from operator import attrgetter
+from math import sqrt
 
 
 class GeneticAlgorithm(object):
     def __init__(self, population_size: int, mutation_rate: float, crossover_rate: float, tournament_size: int,
-                 items: pd.DataFrame, capacity: int, max_iter: int):
+                 items: pd.DataFrame, capacity: int, capacity_tolerance: float, max_iter: int):
         self.population_size = population_size
         self.mutation_rate = mutation_rate
         self.crossover_rate = crossover_rate
@@ -14,6 +15,7 @@ class GeneticAlgorithm(object):
 
         self.items = items
         self.capacity = capacity
+        self.capacity_tolerance = capacity_tolerance
         self.max_iter = max_iter
 
         self.cache = {}
@@ -34,7 +36,7 @@ class GeneticAlgorithm(object):
         pop = []
         for _ in range(self.population_size):
             genotype = np.random.randint(2, size=len(self.items))
-            ind = Individual(genotype, self.items, self.capacity)
+            ind = Individual(genotype, self.items, self.capacity, self.capacity_tolerance)
             pop.append(ind)
         return pop
 
@@ -73,7 +75,7 @@ class GeneticAlgorithm(object):
                 new1 = self.cache[tuple(gen1)]
                 #print("Cache used for individual", (i*2) + 1, new1.genotype)
             else:
-                new1 = Individual(gen1, self.items, self.capacity)
+                new1 = Individual(gen1, self.items, self.capacity, self.capacity_tolerance)
                 #print("Finished creating individual", (i*2) + 1, new1.genotype)
                 if tuple(new1.genotype) not in self.cache:
                     self.cache[tuple(new1.genotype)] = new1
@@ -82,7 +84,7 @@ class GeneticAlgorithm(object):
                 new2 = self.cache[tuple(gen2)]
                 #print("Cache used for individual", (i*2) + 2, new2.genotype)
             else:
-                new2 = Individual(gen2, self.items, self.capacity)
+                new2 = Individual(gen2, self.items, self.capacity, self.capacity_tolerance)
                 #print("Finished creating individual", (i*2) + 2, new2.genotype)
                 if tuple(new2.genotype) not in self.cache:
                     self.cache[tuple(new2.genotype)] = new2
@@ -159,6 +161,16 @@ class GeneticAlgorithm(object):
         return chosen
 
 class Individual(object):
-    def __init__(self, genotype: list, items: pd.DataFrame, capacity: int):
+    def __init__(self, genotype: list, items: pd.DataFrame, capacity: int, capacity_tolerance: float):
         self.genotype = genotype
-        self.fitness = int(sum([items.loc[i+1]["Value"] if self.genotype[i] else 0.0 for i in range(len(genotype))]))
+        self.fitness = self.calc_fitness(capacity, capacity_tolerance)
+    
+    def calc_fitness(self, capacity, capacity_tolerance):
+        total_value = int(sum([self.items.loc[i+1]["Value"] if self.genotype[i] else 0.0 for i in range(len(genotype))]))
+        total_weight = int(sum([self.items.loc[i+1]["Weight"] if self.genotype[i] else 0.0 for i in range(len(genotype))]))
+        
+        overweight = total_weight - capacity if total_weight > capacity else 0
+        if overweight > capacity_tolerance:
+            return -99999
+        else:
+            return total_value - overweight       
