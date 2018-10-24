@@ -163,14 +163,14 @@ class GeneticAlgorithm(object):
 class Individual(object):
     def __init__(self, genotype: list, items: pd.DataFrame, capacity: int, capacity_tolerance: float):
         self.genotype = genotype
-        self.fitness = self.calc_fitness(capacity, capacity_tolerance)
+        self.fitness, self.value, self.overweight = self.calc_fitness(items, capacity, capacity_tolerance)
     
-    def calc_fitness(self, capacity, capacity_tolerance):
-        total_value = int(sum([self.items.loc[i+1]["Value"] if self.genotype[i] else 0.0 for i in range(len(genotype))]))
-        total_weight = int(sum([self.items.loc[i+1]["Weight"] if self.genotype[i] else 0.0 for i in range(len(genotype))]))
+    def calc_fitness(self, items, capacity, capacity_tolerance):
+        total_value = int(sum([items.loc[i+1]["Value"] if self.genotype[i] else 0.0 for i in range(len(self.genotype))]))
+        total_weight = int(sum([items.loc[i+1]["Weight"] if self.genotype[i] else 0.0 for i in range(len(self.genotype))]))
         
         overweight = total_weight - capacity if total_weight > capacity else 0
         if overweight > capacity_tolerance:
-            return -99999
+            return total_value - 10*overweight - 999999, total_value, overweight
         else:
-            return total_value - overweight       
+            return total_value - 10*overweight, total_value, overweight

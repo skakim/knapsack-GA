@@ -1,0 +1,15 @@
+- Smallcoeff (easy instance): uncorrelated
+knapPI_1_50_1000_1
+n 50
+c 995
+z 8373
+
+- Hard instance: uncorrelated span(2,10)
+knapPI_11_50_1000_1
+n 50
+c 970
+z 1428
+
+-> Aparentemente tolerância não fez diferença nenhuma, mas provavelmente porque tivemos que aplicar uma punição alta para overweight (fitness = value - 10*overweight) para o algoritmo funcionar (CONFIRMAR COM OS GRÁFICOS, talvez uma tolerância muito baixa tenha sido melhor, mas só com os gráficos para saber)
+
+-> O algoritmo resolveu instância fácil e difícil com a mesma dificuldade, talvez o conceito de "fácil" e "difícil" do Pisinger seja aplicável somente aos algoritmos não-IA (confirmar com os gráficos também)
